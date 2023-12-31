@@ -33,5 +33,5 @@ This web application utilizes Python, Flask, and MediaPipe to perform pose detec
 1. Clone the repository:
 
    ```bash
-   git clone https://github.com/your-username/pose-detection-web-app.git
+   git clone https://github.com/Omnamdeo912/pose-detection-feature.git
 
