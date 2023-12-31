@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Login Page</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+</head>
+<body>
+    <div class="container mt-5">
+        <div class="row justify-content-center">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-body">
+                        <h3 class="card-title text-center">Pose Estimation Login</h3>
+                        <form id="loginForm" action="/pose_detection" method="POST">
+                            <div class="form-group">
+                                <label for="username">Username:</label>
+                                <input type="text" class="form-control" id="username" name="username" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="password">Password:</label>
+                                <input type="password" class="form-control" id="password" name="password" required>
+                            </div>
+                            <div class="form-group">
+                                <input type="submit" class="btn btn-primary" value="Login">
+                                <button type="button" class="btn btn-link" onclick="signup()">Sign up</button>
+                            </div>
+                            {% if error %}
+                                <div class="alert alert-danger" role="alert">
+                                    {{ error }}
+                                </div>
+                            {% endif %}
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Add Bootstrap JS and Popper.js -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.3/dist/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script>
+        // Function to redirect the user to SignUp page
+        function signup() {
+            window.location.href = "/signup"
+        }
+
+        // Function to validate the login and redirect the user to the home page
+        function loginForm() {
+            var username = document.getElementById("username").value;
+            var password = document.getElementById("password").value;
+            const formData = new FormData();
+            formData.append("username", username)
+            formData.append("password", password)
+            fetch("/login", {
+                method: "POST",
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.error){
+                    throw new Error(data.error);
+                }
+                window.location.href = "/pose_detection"
+            })
+            .catch(error => {
+                alert(error)
+            })
+        }
+    </script>
+</body>
+</html>

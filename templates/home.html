@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Pose Estimation</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        .result-image {
+            display: none;
+            width: 400px;
+            height: auto;
+        }
+    </style>
+</head>
+<body class="bg-light">
+    <div class="container mt-4">
+        <div class="row mb-4">
+            <div class="col-6">
+                <h1>Welcome, {{ username }}</h1>
+            </div>
+            <div class="col-6 text-right">
+                {% if profile_picture %}
+                    <img src="data:image/jpeg;base64,{{ profile_picture }}" alt="User Image" class="rounded-circle" style="width: 50px; height: 50px;">
+                {% endif %}
+                <a href="#" class="btn btn-danger ml-2" onclick="logout()">Logout</a>
+            </div>
+        </div>
+        <hr class="my-4">
+    </div>
+    <div class="container mt-4">
+        <h2 class="text-center">Upload Images for Pose Estimation</h2>
+        <div class="upload-section mt-4">
+            <!-- Main Image Section -->
+            <div class="row">
+                <div class="col-md-6 text-right">
+                    <div class="upload-form">
+                        <label for="mainImage"><b>Upload Main Image:</b></label>
+                        <input id="mainImage" type="file" name="mainImage" accept="image/*" required>
+                        <img id="mainImageDisplay" class="result-image mt-2" src="" alt="Main Image">
+                    </div>
+                </div>
+                <!-- Comparison Image Section -->
+                <div class="col-md-6 text-right">
+                    <div class="upload-form">
+                        <label for="comparisonImage"><b>Comparison Image:</b></label>
+                        <input id="comparisonImage" type="file" name="comparisonImage" accept="image/*" required>
+                        <img id="comparisonImageDisplay" class="result-image mt-2" src="" alt="Comparison Image">
+                    </div>
+                </div>
+            </div>
+            <div class="row mt-4">
+                <div class="col-12 text-center">
+                    <div class="upload-form">
+                        <input type="submit" class="btn btn-primary" value="Process Images" onclick="processImages()">
+                        <h2 id="result-pose" class="text-center mt-4"></h2>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.3/dist/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script>
+
+        // Function to logout the user and clear the session variables
+        function logout() {
+            fetch('/logout', {
+                method: 'POST'
+            })
+            .then(response => response.json())
+            .then(data => {
+                window.location.href = "/";
+            })
+            .catch(error => {
+                console.error('Logout error:', error);
+            });
+        }
+
+        // Function to process Images and return the pose estimations and similarity score
+        function processImages() {
+            const mainImageInput = document.getElementById('mainImage');
+            const comparisonImageInput = document.getElementById('comparisonImage');
+
+            // Get the selected files from the input elements
+            const mainImageFile = mainImageInput.files[0];
+            const comparisonImageFile = comparisonImageInput.files[0];
+
+            if (!mainImageFile || !comparisonImageFile) {
+                alert('Please select both main and comparison images.');
+                return;
+            }
+
+            // Create a FormData object to send the files
+            const formData = new FormData();
+            formData.append('mainImage', mainImageFile);
+            formData.append('comparisonImage', comparisonImageFile);
+            console.log(formData)
+            fetch('/process_images', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json()) 
+            .then(data => {
+                const mainImageDisplay = document.getElementById('mainImageDisplay');
+                const comparisonImageDisplay = document.getElementById('comparisonImageDisplay'); 
+                const poseResult = document.getElementById('result-pose')               
+                mainImageDisplay.src = 'data:image/jpeg;base64,' + data.mainImage;
+                comparisonImageDisplay.src = 'data:image/jpeg;base64,' + data.comparisonImage;
+                if (data.similarity_score > 75) {
+                    poseResult.classList.add("btn-success")
+                    poseResult.classList.remove("btn-danger")
+                }
+                else {
+                    poseResult.classList.add("btn-danger")
+                    poseResult.classList.remove("btn-success")
+                }
+                poseResult.textContent = String(data.similarity_score) + "% similar"
+                mainImageDisplay.style.display = "block";
+                comparisonImageDisplay.style.display = "block";
+                poseResult.style.display = "block"
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+
+        }
+    </script>
+</body>
+</html>
